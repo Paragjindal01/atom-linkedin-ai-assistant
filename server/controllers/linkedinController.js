@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 exports.getStatus = async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, linkedin_member_id, expires_at FROM linkedin_accounts WHERE user_id = $1 LIMIT 1',
+      'SELECT id, linkedin_member_id, organization_id, organization_name, expires_at FROM linkedin_accounts WHERE user_id = $1 LIMIT 1',
       [req.user.id]
     );
 
@@ -19,7 +19,9 @@ exports.getStatus = async (req, res) => {
         expired: isExpired,
         account: {
           id: account.id,
-          memberId: account.linkedin_member_id
+          memberId: account.linkedin_member_id,
+          organizationId: account.organization_id,
+          organizationName: account.organization_name
         }
       });
     }
@@ -90,6 +92,42 @@ exports.handleCallback = async (req, res) => {
   }
 };
 
+exports.getOrganizations = async (req, res) => {
+  try {
+    const result = await db.query('SELECT access_token FROM linkedin_accounts WHERE user_id = $1', [req.user.id]);
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "LinkedIn not connected." });
+    }
+    const organizations = await linkedinService.fetchOrganizations(result.rows[0].access_token);
+    res.json(organizations);
+  } catch (error) {
+    console.error("Fetch Organizations Error:", error);
+    res.status(500).json({ error: "Failed to fetch LinkedIn organizations." });
+  }
+};
+
+exports.selectOrganization = async (req, res) => {
+  const { organization_id, organization_name } = req.body;
+  
+  try {
+    const result = await db.query(
+      `UPDATE linkedin_accounts 
+       SET organization_id = $1, organization_name = $2 
+       WHERE user_id = $3 RETURNING id, organization_id, organization_name`,
+      [organization_id || null, organization_name || null, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "LinkedIn not connected." });
+    }
+
+    res.json({ success: true, account: result.rows[0] });
+  } catch (error) {
+    console.error("Select Organization Error:", error);
+    res.status(500).json({ error: "Failed to select organization." });
+  }
+};
+
 exports.publishPost = async (req, res) => {
   const { generated_content_id } = req.body;
   if (!generated_content_id) {
@@ -114,7 +152,7 @@ exports.publishPost = async (req, res) => {
 
     // Get LinkedIn account
     const accountResult = await db.query(
-      'SELECT access_token, linkedin_member_id FROM linkedin_accounts WHERE user_id = $1 LIMIT 1',
+      'SELECT access_token, linkedin_member_id, organization_id FROM linkedin_accounts WHERE user_id = $1 LIMIT 1',
       [req.user.id]
     );
 
@@ -128,7 +166,8 @@ exports.publishPost = async (req, res) => {
     const publishResult = await linkedinService.publishPost(
       account.access_token, 
       account.linkedin_member_id, 
-      content.result
+      content.result,
+      account.organization_id
     );
 
     if (publishResult.success) {

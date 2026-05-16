@@ -62,6 +62,7 @@ CREATE TABLE linkedin_accounts (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     linkedin_member_id VARCHAR(255) NOT NULL,
     organization_id VARCHAR(255),
+    organization_name VARCHAR(255),
     access_token TEXT NOT NULL,
     refresh_token TEXT,
     expires_at TIMESTAMP WITH TIME ZONE,

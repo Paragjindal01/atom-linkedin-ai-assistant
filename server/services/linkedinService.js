@@ -13,7 +13,7 @@ exports.getAuthUrl = (userId) => {
   }
   const statePayload = { userId };
   const state = jwt.sign(statePayload, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '15m' });
-  const scope = 'openid profile email w_member_social';
+  const scope = 'openid profile email w_member_social w_organization_social r_organization_social rw_organization_admin';
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}`;
 };
 
@@ -67,10 +67,64 @@ exports.fetchProfile = async (accessToken) => {
   };
 };
 
-exports.publishPost = async (accessToken, linkedinMemberId, text) => {
+exports.fetchOrganizations = async (accessToken) => {
+  const aclUrl = 'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED';
+  const aclResponse = await fetch(aclUrl, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'X-Restli-Protocol-Version': '2.0.0'
+    }
+  });
+
+  if (!aclResponse.ok) {
+    const errorData = await aclResponse.text();
+    console.error("LinkedIn fetch organization ACLs failed:", errorData);
+    throw new Error('Failed to fetch LinkedIn organization ACLs');
+  }
+
+  const aclData = await aclResponse.json();
+  const elements = aclData.elements || [];
+  
+  if (elements.length === 0) {
+    return [];
+  }
+
+  const orgIds = elements.map(el => {
+    const urn = el.organization;
+    return urn.split(':').pop();
+  });
+
+  const organizations = [];
+  for (const id of orgIds) {
+    try {
+      const orgUrl = `https://api.linkedin.com/v2/organizations/${id}`;
+      const orgResponse = await fetch(orgUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0'
+        }
+      });
+      if (orgResponse.ok) {
+        const orgData = await orgResponse.json();
+        organizations.push({
+          id,
+          name: orgData.localizedName
+        });
+      }
+    } catch (err) {
+      console.error(`Failed to fetch details for organization ${id}`, err);
+    }
+  }
+
+  return organizations;
+};
+
+exports.publishPost = async (accessToken, linkedinMemberId, text, organizationId) => {
   const url = 'https://api.linkedin.com/v2/ugcPosts';
+  const authorUrn = organizationId ? `urn:li:organization:${organizationId}` : `urn:li:person:${linkedinMemberId}`;
+  
   const body = {
-    "author": `urn:li:person:${linkedinMemberId}`,
+    "author": authorUrn,
     "lifecycleState": "PUBLISHED",
     "specificContent": {
       "com.linkedin.ugc.ShareContent": {

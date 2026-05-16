@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Button from '../components/Button';
-import { getLinkedInStatus, getAuthUrl, getScheduledPosts } from '../api/linkedin';
-import { Share2, Link as LinkIcon, CalendarClock, MessageSquareText, AlertCircle, CheckCircle2, Bot } from 'lucide-react';
+import { getLinkedInStatus, getAuthUrl, getScheduledPosts, getLinkedInOrganizations, selectLinkedInOrganization } from '../api/linkedin';
+import { Share2, Link as LinkIcon, CalendarClock, MessageSquareText, AlertCircle, CheckCircle2, Bot, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const LinkedInAutomation = () => {
   const [status, setStatus] = useState({ connected: false, loading: true, expired: false });
   const [scheduledPosts, setScheduledPosts] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
+  const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [authError, setAuthError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [orgSuccessMsg, setOrgSuccessMsg] = useState('');
   
   const location = useLocation();
 
@@ -34,12 +37,45 @@ const LinkedInAutomation = () => {
     try {
       const data = await getLinkedInStatus();
       setStatus({ ...data, loading: false });
-      if (data.connected) {
+      if (data.connected && !data.expired) {
         fetchPosts();
+        fetchOrgs();
       }
     } catch (err) {
       console.error(err);
       setStatus({ connected: false, loading: false });
+    }
+  };
+
+  const fetchOrgs = async () => {
+    try {
+      setLoadingOrgs(true);
+      const orgs = await getLinkedInOrganizations();
+      setOrganizations(orgs);
+    } catch (err) {
+      console.error("Failed to load organizations", err);
+    } finally {
+      setLoadingOrgs(false);
+    }
+  };
+
+  const handleSelectOrg = async (orgId, orgName) => {
+    try {
+      const res = await selectLinkedInOrganization(orgId, orgName);
+      if (res.success) {
+        setStatus(prev => ({
+          ...prev,
+          account: {
+            ...prev.account,
+            organizationId: orgId,
+            organizationName: orgName
+          }
+        }));
+        setOrgSuccessMsg(orgId ? `Selected ${orgName} as default publishing page.` : 'Reverted back to Personal Profile publishing.');
+        setTimeout(() => setOrgSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      setAuthError("Failed to select organization.");
     }
   };
 
@@ -110,7 +146,9 @@ const LinkedInAutomation = () => {
                 <LinkIcon className="w-8 h-8" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white mb-1">LinkedIn Account</h2>
+                <h2 className="text-xl font-bold text-white mb-1">
+                  {status.account?.organizationId ? `${status.account.organizationName} (Page)` : 'LinkedIn Account'}
+                </h2>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${status.connected && !status.expired ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-slate-500'}`}></div>
                   <span className="text-sm text-slate-300">
@@ -132,6 +170,73 @@ const LinkedInAutomation = () => {
             </div>
           </div>
         </div>
+
+        {orgSuccessMsg && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 shrink-0" />
+            <p className="text-sm font-medium">{orgSuccessMsg}</p>
+          </motion.div>
+        )}
+
+        {status.connected && !status.expired && (
+          <div className="glass-panel rounded-3xl p-8 mb-8 border border-white/5">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-indigo-400" />
+                Publishing Target
+              </h3>
+            </div>
+            
+            <p className="text-sm text-slate-400 mb-6">
+              Select where Atom should publish your content. You can publish to your personal profile or any company page you administer.
+            </p>
+
+            {loadingOrgs ? (
+              <div className="text-center py-6">
+                <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-slate-400 text-sm">Loading your pages...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button
+                  onClick={() => handleSelectOrg(null, null)}
+                  className={`text-left p-4 rounded-2xl border transition-all ${!status.account?.organizationId ? 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-black/40 border-white/5 hover:border-white/10'}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
+                      <LinkIcon className="w-5 h-5 text-slate-400" />
+                    </div>
+                    {!status.account?.organizationId && <CheckCircle2 className="w-5 h-5 text-indigo-400" />}
+                  </div>
+                  <h4 className="font-bold text-white mb-1">Personal Profile</h4>
+                  <p className="text-xs text-slate-400">Publish as yourself</p>
+                </button>
+
+                {organizations.map(org => (
+                  <button
+                    key={org.id}
+                    onClick={() => handleSelectOrg(org.id, org.name)}
+                    className={`text-left p-4 rounded-2xl border transition-all ${status.account?.organizationId === org.id ? 'bg-indigo-500/10 border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-black/40 border-white/5 hover:border-white/10'}`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
+                        <Building2 className="w-5 h-5 text-indigo-400" />
+                      </div>
+                      {status.account?.organizationId === org.id && <CheckCircle2 className="w-5 h-5 text-indigo-400" />}
+                    </div>
+                    <h4 className="font-bold text-white mb-1 line-clamp-1">{org.name}</h4>
+                    <p className="text-xs text-slate-400">Company Page</p>
+                  </button>
+                ))}
+              </div>
+            )}
+            {organizations.length === 0 && !loadingOrgs && (
+              <p className="text-xs text-slate-500 mt-4 italic">
+                No company pages found. Ensure you are an administrator of the page.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Scheduled Posts */}

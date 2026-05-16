@@ -11,6 +11,8 @@ router.use(authMiddleware);
 
 router.get('/status', linkedinController.getStatus);
 router.get('/auth-url', linkedinController.getAuthUrl);
+router.get('/organizations', linkedinController.getOrganizations);
+router.post('/select-organization', linkedinController.selectOrganization);
 router.post('/publish-post', linkedinController.publishPost);
 router.post('/schedule-post', linkedinController.schedulePost);
 router.get('/scheduled-posts', linkedinController.getScheduledPosts);

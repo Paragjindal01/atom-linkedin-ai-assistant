@@ -15,6 +15,16 @@ export const publishPostToLinkedIn = async (generatedContentId) => {
   return response.data;
 };
 
+export const getLinkedInOrganizations = async () => {
+  const response = await api.get('/linkedin/organizations');
+  return response.data;
+};
+
+export const selectLinkedInOrganization = async (orgId, orgName) => {
+  const response = await api.post('/linkedin/select-organization', { organization_id: orgId, organization_name: orgName });
+  return response.data;
+};
+
 export const schedulePost = async (data) => {
   const response = await api.post('/linkedin/schedule-post', data);
   return response.data;
