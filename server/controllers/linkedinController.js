@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const linkedinService = require('../services/linkedinService');
+const jwt = require('jsonwebtoken');
 
 exports.getStatus = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ exports.getStatus = async (req, res) => {
 
 exports.getAuthUrl = (req, res) => {
   try {
-    const url = linkedinService.getAuthUrl();
+    const url = linkedinService.getAuthUrl(req.user.id);
     res.json({ url });
   } catch (error) {
     console.error("Error getting auth URL:", error);
@@ -41,35 +42,51 @@ exports.getAuthUrl = (req, res) => {
 };
 
 exports.handleCallback = async (req, res) => {
-  const { code } = req.query;
+  const { code, state } = req.query;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
   
-  if (!code) {
-    return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/linkedin-automation?error=missing_code`);
+  if (!code || !state) {
+    return res.redirect(`${clientUrl}/linkedin-automation?error=missing_code_or_state`);
   }
 
   try {
+    // Verify state and extract user_id
+    const decoded = jwt.verify(state, process.env.JWT_SECRET || 'fallback_secret');
+    const userId = decoded.userId;
+
     // 1. Exchange code for token
     const tokenData = await linkedinService.exchangeCodeForToken(code);
     
     // 2. Fetch member profile to get ID
     const profile = await linkedinService.fetchProfile(tokenData.access_token);
+    const linkedinMemberId = profile.id;
     
     // Calculate expiration
     const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+    const refreshToken = tokenData.refresh_token || null;
 
     // 3. Save to database (Upsert)
-    // We assume the user is still logged in to our app and we passed user token via state or cookie,
-    // BUT since this is an OAuth callback it's a direct GET request from LinkedIn.
-    // For a real app, we usually encode a JWT or session ID into the `state` parameter of the OAuth request,
-    // and verify it here. For this MVP foundation, we'll assume we parse user_id from the state parameter.
-    // As a placeholder, we won't fully implement the callback saving without the decoded state.
-    // Redirect back to frontend to complete saving if needed, or handle it via a POST from frontend.
+    const existing = await db.query('SELECT id FROM linkedin_accounts WHERE user_id = $1', [userId]);
+    if (existing.rows.length > 0) {
+      await db.query(
+        `UPDATE linkedin_accounts 
+         SET linkedin_member_id = $1, access_token = $2, refresh_token = $3, expires_at = $4
+         WHERE user_id = $5`,
+        [linkedinMemberId, tokenData.access_token, refreshToken, expiresAt, userId]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO linkedin_accounts (user_id, linkedin_member_id, access_token, refresh_token, expires_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [userId, linkedinMemberId, tokenData.access_token, refreshToken, expiresAt]
+      );
+    }
 
     // Safe redirect back to frontend
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/linkedin-automation?success=true`);
+    res.redirect(`${clientUrl}/linkedin-automation?success=true`);
   } catch (error) {
     console.error("OAuth Callback Error:", error);
-    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/linkedin-automation?error=auth_failed`);
+    res.redirect(`${clientUrl}/linkedin-automation?error=auth_failed`);
   }
 };
 

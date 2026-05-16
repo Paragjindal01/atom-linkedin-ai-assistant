@@ -2,33 +2,68 @@
  * Placeholder Service for LinkedIn Automation
  */
 
-exports.getAuthUrl = () => {
+const jwt = require('jsonwebtoken');
+
+exports.getAuthUrl = (userId) => {
   // Return a safe placeholder URL or a real constructed URL if env vars exist
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const redirectUri = process.env.LINKEDIN_REDIRECT_URI;
   if (!clientId || !redirectUri) {
     return 'http://localhost:5173/linkedin-automation?error=missing_config';
   }
-  const state = Math.random().toString(36).substring(7);
+  const statePayload = { userId };
+  const state = jwt.sign(statePayload, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '15m' });
   const scope = 'openid profile email w_member_social';
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}`;
 };
 
 exports.exchangeCodeForToken = async (code) => {
-  // Safe placeholder: return a fake token object
-  console.log("Mock exchanging code for token:", code);
-  return {
-    access_token: 'mock_access_token_123',
-    expires_in: 5184000, // 60 days
-    refresh_token: 'mock_refresh_token_456',
-    refresh_token_expires_in: 31536000 // 1 year
-  };
+  const clientId = process.env.LINKEDIN_CLIENT_ID;
+  const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
+  const redirectUri = process.env.LINKEDIN_REDIRECT_URI;
+
+  const params = new URLSearchParams();
+  params.append('grant_type', 'authorization_code');
+  params.append('code', code);
+  params.append('client_id', clientId);
+  params.append('client_secret', clientSecret);
+  params.append('redirect_uri', redirectUri);
+
+  const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: params
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("LinkedIn token exchange failed:", errorData);
+    throw new Error('Failed to exchange code for token');
+  }
+
+  return await response.json();
 };
 
 exports.fetchProfile = async (accessToken) => {
-  console.log("Mock fetching profile with token:", accessToken);
+  const response = await fetch('https://api.linkedin.com/v2/userinfo', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("LinkedIn fetch profile failed:", errorData);
+    throw new Error('Failed to fetch LinkedIn profile');
+  }
+
+  const data = await response.json();
+  // userinfo returns "sub" for the member id
   return {
-    id: 'mock_member_id_789'
+    id: data.sub,
+    ...data
   };
 };
 
