@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { getContentHistory, deleteContent, updateContentStatus } from '../api/content';
+import { getLinkedInStatus, publishPostToLinkedIn } from '../api/linkedin';
 import { History, Copy, Trash2, CheckCircle2, AlertCircle, Calendar, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,10 +10,22 @@ const ContentHistory = () => {
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
   const [copiedId, setCopiedId] = useState(null);
+  const [linkedinConnected, setLinkedinConnected] = useState(false);
+  const [failedPublishes, setFailedPublishes] = useState(new Set());
 
   useEffect(() => {
     fetchHistory();
+    checkLinkedIn();
   }, []);
+
+  const checkLinkedIn = async () => {
+    try {
+      const status = await getLinkedInStatus();
+      setLinkedinConnected(status.connected && !status.expired);
+    } catch (err) {
+      console.error("Failed to check LinkedIn status", err);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -50,6 +63,21 @@ const ContentHistory = () => {
       showMessage('success', `Content marked as ${status}.`);
     } catch (err) {
       showMessage('error', `Failed to mark content as ${status}.`);
+    }
+  };
+
+  const handlePublishToLinkedIn = async (id) => {
+    try {
+      setLoading(true);
+      await publishPostToLinkedIn(id);
+      setHistory(prev => prev.map(item => item.id === id ? { ...item, publishing_status: 'posted' } : item));
+      showMessage('success', 'Successfully published to LinkedIn!');
+      setFailedPublishes(prev => { const n = new Set(prev); n.delete(id); return n; });
+    } catch (err) {
+      showMessage('error', err.response?.data?.error || err.message || 'Failed to publish to LinkedIn.');
+      setFailedPublishes(prev => new Set(prev).add(id));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,12 +202,26 @@ const ContentHistory = () => {
                       )}
 
                       {item.publishing_status === 'approved' && (
-                        <button 
-                          onClick={() => handleUpdateStatus(item.id, 'posted')}
-                          className="flex items-center gap-2 text-sm bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2 rounded-xl transition-colors border border-green-500/20"
-                        >
-                          Mark Posted
-                        </button>
+                        <div className="flex gap-2">
+                          {item.content_type === 'LinkedIn Post' && linkedinConnected && (
+                            <button 
+                              onClick={() => handlePublishToLinkedIn(item.id)}
+                              disabled={loading}
+                              className="flex items-center gap-2 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-4 py-2 rounded-xl transition-colors border border-cyan-500/20 disabled:opacity-50"
+                            >
+                              Publish to LinkedIn
+                            </button>
+                          )}
+                          
+                          {(item.content_type !== 'LinkedIn Post' || !linkedinConnected || failedPublishes.has(item.id)) && (
+                            <button 
+                              onClick={() => handleUpdateStatus(item.id, 'posted')}
+                              className="flex items-center gap-2 text-sm bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2 rounded-xl transition-colors border border-green-500/20"
+                            >
+                              Mark Posted
+                            </button>
+                          )}
+                        </div>
                       )}
 
                       <button 

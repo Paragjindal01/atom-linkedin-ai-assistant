@@ -10,6 +10,11 @@ export const getAuthUrl = async () => {
   return response.data;
 };
 
+export const publishPostToLinkedIn = async (generatedContentId) => {
+  const response = await api.post('/linkedin/publish-post', { generated_content_id: generatedContentId });
+  return response.data;
+};
+
 export const schedulePost = async (data) => {
   const response = await api.post('/linkedin/schedule-post', data);
   return response.data;

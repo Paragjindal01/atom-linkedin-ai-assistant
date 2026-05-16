@@ -67,12 +67,44 @@ exports.fetchProfile = async (accessToken) => {
   };
 };
 
-exports.publishPost = async (accountId, text) => {
-  console.log(`Mock publishing post to account ${accountId}: ${text}`);
+exports.publishPost = async (accessToken, linkedinMemberId, text) => {
+  const url = 'https://api.linkedin.com/v2/ugcPosts';
+  const body = {
+    "author": `urn:li:person:${linkedinMemberId}`,
+    "lifecycleState": "PUBLISHED",
+    "specificContent": {
+      "com.linkedin.ugc.ShareContent": {
+        "shareCommentary": {
+          "text": text
+        },
+        "shareMediaCategory": "NONE"
+      }
+    },
+    "visibility": {
+      "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+    }
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      'X-Restli-Protocol-Version': '2.0.0'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("LinkedIn publish failed:", errorData);
+    throw new Error('Failed to publish to LinkedIn');
+  }
+
+  const data = await response.json();
   return {
-    success: false,
-    message: "LinkedIn API not connected yet. This is a safe placeholder.",
-    post_id: null
+    success: true,
+    post_id: data.id || null
   };
 };
 

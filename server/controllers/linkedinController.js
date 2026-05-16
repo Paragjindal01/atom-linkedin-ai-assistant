@@ -90,6 +90,72 @@ exports.handleCallback = async (req, res) => {
   }
 };
 
+exports.publishPost = async (req, res) => {
+  const { generated_content_id } = req.body;
+  if (!generated_content_id) {
+    return res.status(400).json({ error: "generated_content_id is required." });
+  }
+
+  try {
+    // Check if content exists and is approved
+    const contentResult = await db.query(
+      'SELECT id, result, publishing_status, platform FROM generated_content WHERE id = $1 AND user_id = $2',
+      [generated_content_id, req.user.id]
+    );
+
+    if (contentResult.rows.length === 0) {
+      return res.status(404).json({ error: "Content not found." });
+    }
+
+    const content = contentResult.rows[0];
+    if (content.publishing_status !== 'approved') {
+      return res.status(400).json({ error: "Content must be approved before publishing." });
+    }
+
+    // Get LinkedIn account
+    const accountResult = await db.query(
+      'SELECT access_token, linkedin_member_id FROM linkedin_accounts WHERE user_id = $1 LIMIT 1',
+      [req.user.id]
+    );
+
+    if (accountResult.rows.length === 0) {
+      return res.status(400).json({ error: "LinkedIn account not connected." });
+    }
+
+    const account = accountResult.rows[0];
+
+    // Publish
+    const publishResult = await linkedinService.publishPost(
+      account.access_token, 
+      account.linkedin_member_id, 
+      content.result
+    );
+
+    if (publishResult.success) {
+      // Update status to posted
+      await db.query(
+        'UPDATE generated_content SET publishing_status = $1 WHERE id = $2',
+        ['posted', generated_content_id]
+      );
+      
+      // Create scheduled_posts row for tracking
+      await db.query(
+        `INSERT INTO scheduled_posts (user_id, generated_content_id, post_text, scheduled_for, status, linkedin_post_id)
+         VALUES ($1, $2, $3, NOW(), 'posted', $4)`,
+        [req.user.id, generated_content_id, content.result, publishResult.post_id]
+      );
+
+      return res.json({ success: true, post_id: publishResult.post_id });
+    }
+
+    res.status(500).json({ error: "Failed to publish." });
+
+  } catch (error) {
+    console.error("Publish Post Error:", error);
+    res.status(500).json({ error: "Failed to publish post to LinkedIn." });
+  }
+};
+
 exports.schedulePost = async (req, res) => {
   const { generated_content_id, post_text, scheduled_for } = req.body;
 
