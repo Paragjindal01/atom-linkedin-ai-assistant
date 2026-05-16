@@ -232,7 +232,7 @@ const LinkedInAutomation = () => {
             )}
             {organizations.length === 0 && !loadingOrgs && (
               <p className="text-xs text-slate-500 mt-4 italic">
-                No company pages found. Ensure you are an administrator of the page.
+                No company pages found. Company page publishing may require additional LinkedIn API approval.
               </p>
             )}
           </div>

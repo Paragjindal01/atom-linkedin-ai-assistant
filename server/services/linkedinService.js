@@ -13,7 +13,10 @@ exports.getAuthUrl = (userId) => {
   }
   const statePayload = { userId };
   const state = jwt.sign(statePayload, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '15m' });
-  const scope = 'openid profile email w_member_social w_organization_social r_organization_social rw_organization_admin';
+  let scope = 'openid profile email w_member_social';
+  if (process.env.LINKEDIN_ENABLE_ORG_SCOPES === 'true') {
+    scope += ' w_organization_social r_organization_social rw_organization_admin';
+  }
   return `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}`;
 };
 
@@ -77,6 +80,10 @@ exports.fetchOrganizations = async (accessToken) => {
   });
 
   if (!aclResponse.ok) {
+    if (aclResponse.status === 403 || aclResponse.status === 401) {
+      console.warn("LinkedIn fetch organization ACLs Forbidden/Unauthorized: Missing organization scopes.");
+      return [];
+    }
     const errorData = await aclResponse.text();
     console.error("LinkedIn fetch organization ACLs failed:", errorData);
     throw new Error('Failed to fetch LinkedIn organization ACLs');
