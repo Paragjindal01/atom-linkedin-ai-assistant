@@ -4,8 +4,21 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Configure CORS
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [process.env.CLIENT_URL] 
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -23,5 +36,13 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server starting up...`);
+  console.log(`- Port: ${PORT}`);
+  console.log(`- Environment: ${process.env.NODE_ENV || 'development'}`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`- CORS allowed for: ${process.env.CLIENT_URL}`);
+  } else {
+    console.log(`- CORS allowed for: local development URLs`);
+  }
+  console.log(`✅ Server successfully running and ready to accept requests.`);
 });
