@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Target, Bot, History, Settings, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Target, Bot, History, Settings, Sparkles, Share2 } from 'lucide-react';
 
 const Sidebar = () => {
   const links = [
@@ -9,6 +9,7 @@ const Sidebar = () => {
     { name: 'Campaigns', path: '/campaigns', icon: Target },
     { name: 'Ask Atom', path: '/ask-atom', icon: Bot },
     { name: 'Content History', path: '/content-history', icon: History },
+    { name: 'LinkedIn Auto', path: '/linkedin-automation', icon: Share2 },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 

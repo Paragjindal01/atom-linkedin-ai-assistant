@@ -9,6 +9,7 @@ import Campaigns from './pages/Campaigns';
 import AskAtom from './pages/AskAtom';
 import ContentHistory from './pages/ContentHistory';
 import Settings from './pages/Settings';
+import LinkedInAutomation from './pages/LinkedInAutomation';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/campaigns" element={<Campaigns />} />
           <Route path="/ask-atom" element={<AskAtom />} />
           <Route path="/content-history" element={<ContentHistory />} />
+          <Route path="/linkedin-automation" element={<LinkedInAutomation />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </Router>

@@ -114,3 +114,28 @@ exports.deleteContent = async (req, res) => {
     res.status(500).json({ error: 'Server error deleting content' });
   }
 };
+
+exports.updateContentStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!['draft', 'approved', 'posted'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
+  try {
+    const result = await db.query(
+      'UPDATE generated_content SET publishing_status = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+      [status, id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Content not found or unauthorized' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Update Status Error:', error.message);
+    res.status(500).json({ error: 'Server error updating content status' });
+  }
+};

@@ -14,3 +14,8 @@ export const deleteContent = async (id) => {
   const response = await api.delete(`/content/${id}`);
   return response.data;
 };
+
+export const updateContentStatus = async (id, status) => {
+  const response = await api.put(`/content/${id}/status`, { status });
+  return response.data;
+};

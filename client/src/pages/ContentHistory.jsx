@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { getContentHistory, deleteContent } from '../api/content';
+import { getContentHistory, deleteContent, updateContentStatus } from '../api/content';
 import { History, Copy, Trash2, CheckCircle2, AlertCircle, Calendar, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -40,6 +40,16 @@ const ContentHistory = () => {
       setHistory(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       showMessage('error', 'Failed to delete content.');
+    }
+  };
+
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await updateContentStatus(id, status);
+      setHistory(prev => prev.map(item => item.id === id ? { ...item, publishing_status: status } : item));
+      showMessage('success', `Content marked as ${status}.`);
+    } catch (err) {
+      showMessage('error', `Failed to mark content as ${status}.`);
     }
   };
 
@@ -136,19 +146,45 @@ const ContentHistory = () => {
                       <span className="px-3 py-1 text-xs rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">
                         {item.tone}
                       </span>
+                      <span className={`px-3 py-1 text-xs rounded-full border ${
+                        item.publishing_status === 'posted' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                        item.publishing_status === 'approved' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      }`}>
+                        {(item.publishing_status || 'draft').toUpperCase()}
+                      </span>
                     </div>
 
-                    <div className="pt-4 flex gap-3">
+                    <div className="pt-4 flex flex-wrap gap-3">
                       <button 
                         onClick={() => copyToClipboard(item.id, item.result)}
                         className="flex items-center gap-2 text-sm text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-colors border border-white/10"
                       >
                         {copiedId === item.id ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                        {copiedId === item.id ? 'Copied!' : 'Copy Text'}
+                        {copiedId === item.id ? 'Copied!' : 'Copy'}
                       </button>
+
+                      {(!item.publishing_status || item.publishing_status === 'draft') && (
+                        <button 
+                          onClick={() => handleUpdateStatus(item.id, 'approved')}
+                          className="flex items-center gap-2 text-sm bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-xl transition-colors border border-blue-500/20"
+                        >
+                          Approve
+                        </button>
+                      )}
+
+                      {item.publishing_status === 'approved' && (
+                        <button 
+                          onClick={() => handleUpdateStatus(item.id, 'posted')}
+                          className="flex items-center gap-2 text-sm bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2 rounded-xl transition-colors border border-green-500/20"
+                        >
+                          Mark Posted
+                        </button>
+                      )}
+
                       <button 
                         onClick={() => handleDelete(item.id)}
-                        className="flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 w-10 h-10 rounded-xl transition-colors"
+                        className="flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 px-3 py-2 rounded-xl transition-colors"
                         title="Delete Content"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -27,6 +27,7 @@ app.use("/api/business-profile", require("./routes/businessProfile"));
 app.use("/api/campaigns", require("./routes/campaigns"));
 app.use("/api/content", require("./routes/content"));
 app.use("/api/dashboard", require("./routes/dashboard"));
+app.use("/api/linkedin", require("./routes/linkedin"));
 
 // Basic route
 app.get('/', (req, res) => {

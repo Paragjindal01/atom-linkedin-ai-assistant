@@ -8,6 +8,7 @@ router.use(authMiddleware);
 
 router.post('/generate', contentController.generateAIContent);
 router.get('/history', contentController.getContentHistory);
+router.put('/:id/status', contentController.updateContentStatus);
 router.delete('/:id', contentController.deleteContent);
 
 module.exports = router;
