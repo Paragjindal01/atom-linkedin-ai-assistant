@@ -60,15 +60,15 @@ const BusinessProfile = () => {
       if (profile && profile.id) {
         const updated = await updateBusinessProfile(profile.id, formData);
         setProfile(updated);
-        setStatusMsg({ type: 'success', text: 'Business profile successfully updated.' });
+        setStatusMsg({ type: 'success', text: 'Company context successfully updated.' });
       } else {
         const created = await createBusinessProfile(formData);
         setProfile(created);
-        setStatusMsg({ type: 'success', text: 'Business profile successfully created.' });
+        setStatusMsg({ type: 'success', text: 'Company context successfully created.' });
       }
     } catch (err) {
       console.error(err);
-      setStatusMsg({ type: 'error', text: err.response?.data?.error || 'Failed to save business profile.' });
+      setStatusMsg({ type: 'error', text: err.response?.data?.error || 'Failed to save company context.' });
     } finally {
       setSaving(false);
       setTimeout(() => {
@@ -83,7 +83,7 @@ const BusinessProfile = () => {
         <div className="flex items-center justify-center h-full min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-            <p className="text-slate-400 animate-pulse">Loading Business Profile...</p>
+            <p className="text-slate-400 animate-pulse">Loading company context...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -99,10 +99,10 @@ const BusinessProfile = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <Briefcase className="w-8 h-8 text-cyan-400" />
-            Business Profile
+            Company Context
           </h1>
           <p className="text-slate-400">
-            Teach Atom about your business. This context is used to generate perfectly tailored marketing content.
+            Configure the company context used by the assistant for sales, marketing, LinkedIn, and internal knowledge workflows.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ const BusinessProfile = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label className={labelClass}>Business Name</label>
+                <label className={labelClass}>Company Name</label>
                 <input 
                   type="text" 
                   name="business_name" 
