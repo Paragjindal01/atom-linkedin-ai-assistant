@@ -7,9 +7,9 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Business Profile', path: '/business-profile', icon: Briefcase },
     { name: 'Campaigns', path: '/campaigns', icon: Target },
-    { name: 'Ask Atom', path: '/ask-atom', icon: Bot },
+    { name: 'AI Assistant', path: '/ask-atom', icon: Bot },
     { name: 'Content History', path: '/content-history', icon: History },
-    { name: 'LinkedIn Auto', path: '/linkedin-automation', icon: Share2 },
+    { name: 'LinkedIn Tools', path: '/linkedin-automation', icon: Share2 },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
