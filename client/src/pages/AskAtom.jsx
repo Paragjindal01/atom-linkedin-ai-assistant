@@ -199,12 +199,12 @@ const AskAtom = () => {
         <div className="max-w-4xl mx-auto text-center mt-20">
           <div className="glass-panel rounded-3xl p-12 border border-amber-500/20">
             <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-white mb-4">Create a business profile first.</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Set up company context first.</h2>
             <p className="text-slate-400 mb-8 max-w-md mx-auto">
-              Before AltaAI Assistant can generate targeted content for you, it needs to learn about your business.
+              Before AltaAI Assistant can generate targeted content, it needs company context configured.
             </p>
             <Link to="/business-profile">
-              <Button variant="primary">Setup Business Profile</Button>
+              <Button variant="primary">Configure Company Context</Button>
             </Link>
           </div>
         </div>
@@ -275,19 +275,9 @@ const AskAtom = () => {
                   <LinkIcon className="w-4 h-4 text-purple-400" /> Workspace Context
                 </h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className={labelClass}>Business Profile</label>
-                    <select
-                      name="business_profile_id"
-                      value={formData.business_profile_id}
-                      onChange={handleChange}
-                      className={`${inputClass} appearance-none bg-[#0f172a]`}
-                      required
-                    >
-                      {profiles.map(p => (
-                        <option key={p.id} value={p.id}>{p.business_name}</option>
-                      ))}
-                    </select>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-[#0f172a] border border-white/10 rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                    <span className="text-sm text-slate-300">AltaAI company context active</span>
                   </div>
                   <div>
                     <label className={labelClass}>Campaign (Optional)</label>

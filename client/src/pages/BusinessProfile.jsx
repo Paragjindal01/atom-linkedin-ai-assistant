@@ -102,7 +102,7 @@ const BusinessProfile = () => {
             Company Context
           </h1>
           <p className="text-slate-400">
-            Configure the company context used by the assistant for sales, marketing, LinkedIn, and internal knowledge workflows.
+            Configure AltaAI's internal company context. This information powers the AI assistant across sales, marketing, LinkedIn, and knowledge workflows.
           </p>
         </div>
 
@@ -233,7 +233,7 @@ const BusinessProfile = () => {
                 ) : (
                   <span className="flex items-center gap-2">
                     <Save className="w-5 h-5" />
-                    {profile ? 'Update Profile' : 'Save Profile'}
+                    {profile ? 'Update Context' : 'Save Context'}
                   </span>
                 )}
               </Button>

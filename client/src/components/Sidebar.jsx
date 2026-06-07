@@ -5,7 +5,7 @@ import { LayoutDashboard, Briefcase, Target, Bot, History, Settings, Sparkles, S
 const Sidebar = () => {
   const links = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Business Profile', path: '/business-profile', icon: Briefcase },
+    { name: 'Company Context', path: '/business-profile', icon: Briefcase },
     { name: 'Campaigns', path: '/campaigns', icon: Target },
     { name: 'AI Assistant', path: '/ask-atom', icon: Bot },
     { name: 'Content History', path: '/content-history', icon: History },
