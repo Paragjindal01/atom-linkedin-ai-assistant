@@ -2,6 +2,8 @@ const db = require('../config/db');
 const { buildMarketingPrompt } = require('../utils/promptBuilder');
 const { generateContent } = require('../services/openaiService');
 
+const NON_PLATFORM_TYPES = ['Sales Reply', 'Internal Knowledge Query'];
+
 exports.generateAIContent = async (req, res) => {
   const {
     business_profile_id,
@@ -14,9 +16,17 @@ exports.generateAIContent = async (req, res) => {
     word_count
   } = req.body;
 
-  if (!business_profile_id || !content_type || !platform || !topic) {
-    return res.status(400).json({ error: 'Missing required fields: business_profile_id, content_type, platform, topic are required.' });
+  if (!business_profile_id || !content_type || !topic) {
+    return res.status(400).json({ error: 'Missing required fields: business_profile_id, content_type, and topic are required.' });
   }
+
+  const isNonPlatformType = NON_PLATFORM_TYPES.includes(content_type);
+
+  if (!isNonPlatformType && !platform) {
+    return res.status(400).json({ error: 'Missing required field: platform is required for this content type.' });
+  }
+
+  const effectivePlatform = platform || 'Internal';
 
   try {
     // 1. Verify business profile belongs to user
@@ -44,7 +54,7 @@ exports.generateAIContent = async (req, res) => {
     // 3. Build prompt
     const prompt = buildMarketingPrompt(profile, {
       content_type,
-      platform,
+      platform: effectivePlatform,
       tone,
       topic,
       keywords,
@@ -52,7 +62,7 @@ exports.generateAIContent = async (req, res) => {
     });
 
     // 4. Call OpenAI API
-    const generatedText = await generateContent(prompt);
+    const generatedText = await generateContent(prompt, content_type);
 
     const keywordsText = Array.isArray(keywords) ? keywords.join(', ') : keywords;
     // 5. Save generated result
@@ -61,13 +71,13 @@ exports.generateAIContent = async (req, res) => {
       (user_id, business_profile_id, campaign_id, content_type, platform, tone, topic, keywords, word_count, prompt, result) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
       RETURNING *`,
-      [req.user.id, business_profile_id, campaign_id || null, content_type, platform, tone || null, topic, keywordsText || null, word_count || null, prompt, generatedText]
+      [req.user.id, business_profile_id, campaign_id || null, content_type, effectivePlatform, tone || null, topic, keywordsText || null, word_count || null, prompt, generatedText]
     );
 
-    // 6. Log usage (optional but good practice as per schema)
+    // 6. Log usage
     await db.query(
       'INSERT INTO usage_logs (user_id, action, tokens_used) VALUES ($1, $2, $3)',
-      [req.user.id, 'generate_content', 0] // 0 because we didn't extract exact token usage for simplicity, can be updated
+      [req.user.id, 'generate_content', 0]
     );
 
     res.status(201).json(newContentResult.rows[0]);
