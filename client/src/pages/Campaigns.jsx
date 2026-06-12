@@ -13,7 +13,6 @@ const Campaigns = () => {
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
   
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -40,7 +39,6 @@ const Campaigns = () => {
       setCampaigns(campaignsData);
       setProfiles(profilesData);
       
-      // Auto-select first profile if exists
       if (profilesData && profilesData.length > 0) {
         setFormData(prev => ({ ...prev, business_profile_id: profilesData[0].id }));
       }
@@ -102,7 +100,7 @@ const Campaigns = () => {
         showMessage('success', 'Campaign successfully created.');
       }
       handleCloseModal();
-      fetchData(); // Refresh list
+      fetchData();
     } catch (err) {
       showMessage('error', err.response?.data?.error || 'Failed to save campaign.');
     } finally {
@@ -137,7 +135,7 @@ const Campaigns = () => {
       <DashboardLayout>
         <div className="flex items-center justify-center h-full min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             <p className="text-slate-400 animate-pulse">Loading Campaigns...</p>
           </div>
         </div>
@@ -145,15 +143,14 @@ const Campaigns = () => {
     );
   }
 
-  // Profile check
   if (profiles.length === 0) {
     return (
       <DashboardLayout>
         <div className="max-w-4xl mx-auto text-center mt-20">
-          <div className="glass-panel rounded-3xl p-12 border border-amber-500/20">
+          <div className="bg-white rounded-xl p-12 border border-amber-200 shadow-sm">
             <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-6" />
-            <h2 className="text-2xl font-bold text-white mb-4">Create a business profile first.</h2>
-            <p className="text-slate-400 mb-8 max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">Create a business profile first.</h2>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto">
               Before creating marketing campaigns, Atom needs to learn about your business to generate accurate content.
             </p>
             <Link to="/business-profile">
@@ -165,19 +162,19 @@ const Campaigns = () => {
     );
   }
 
-  const inputClass = "w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all";
-  const labelClass = "block text-sm font-medium text-slate-300 mb-2 ml-1";
+  const inputClass = "w-full bg-slate-50 border border-slate-200 rounded-lg py-3 px-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
+  const labelClass = "block text-sm font-medium text-slate-600 mb-2 ml-1";
 
   return (
     <DashboardLayout>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Target className="w-8 h-8 text-purple-400" />
+            <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+              <Target className="w-8 h-8 text-indigo-600" />
               Campaigns
             </h1>
-            <p className="text-slate-400">
+            <p className="text-slate-500">
               Manage your marketing campaigns and initiatives in one place.
             </p>
           </div>
@@ -191,10 +188,10 @@ const Campaigns = () => {
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mb-8 p-4 rounded-xl flex items-start gap-3 ${
+            className={`mb-8 p-4 rounded-lg flex items-start gap-3 ${
               statusMsg.type === 'success' 
-                ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
-                : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                ? 'bg-green-50 border border-green-200 text-green-600' 
+                : 'bg-red-50 border border-red-200 text-red-600'
             }`}
           >
             {statusMsg.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" /> : <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />}
@@ -203,12 +200,12 @@ const Campaigns = () => {
         )}
 
         {campaigns.length === 0 ? (
-          <div className="glass-panel rounded-3xl p-12 text-center border border-white/5">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-500/20 to-pink-600/20 flex items-center justify-center mx-auto mb-6">
-              <Target className="w-10 h-10 text-purple-400" />
+          <div className="bg-white rounded-xl p-12 text-center border border-slate-200 shadow-sm">
+            <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-6">
+              <Target className="w-10 h-10 text-indigo-500" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-3">No campaigns yet</h3>
-            <p className="text-slate-400 max-w-lg mx-auto mb-8">
+            <h3 className="text-2xl font-bold text-slate-800 mb-3">No campaigns yet</h3>
+            <p className="text-slate-500 max-w-lg mx-auto mb-8">
               Create your first marketing campaign to start organizing your AI generated content.
             </p>
             <Button variant="secondary" onClick={() => handleOpenModal()}>
@@ -223,32 +220,32 @@ const Campaigns = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="glass-panel p-6 rounded-2xl relative group hover:bg-white/[0.05] transition-colors border border-white/5 flex flex-col h-full"
+                className="bg-white p-6 rounded-xl relative group hover:shadow-md transition-shadow border border-slate-200 shadow-sm flex flex-col h-full"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className={`px-3 py-1 text-xs rounded-full font-medium cursor-pointer transition-colors ${
-                    campaign.status === 'active' ? 'bg-green-500/20 text-green-400 border border-green-500/20 hover:bg-green-500/30' : 
-                    campaign.status === 'draft' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20 hover:bg-amber-500/30' : 
-                    'bg-slate-500/20 text-slate-400 border border-slate-500/20 hover:bg-slate-500/30'
+                    campaign.status === 'active' ? 'bg-green-50 text-green-600 border border-green-200 hover:bg-green-100' : 
+                    campaign.status === 'draft' ? 'bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100' : 
+                    'bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200'
                   }`} onClick={() => handleStatusToggle(campaign)} title="Click to toggle status">
                     {campaign.status.toUpperCase()}
                   </div>
                   
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => handleOpenModal(campaign)} className="text-slate-400 hover:text-cyan-400 bg-white/5 p-2 rounded-lg transition-colors" title="Edit">
+                    <button onClick={() => handleOpenModal(campaign)} className="text-slate-400 hover:text-indigo-600 bg-slate-100 p-2 rounded-lg transition-colors" title="Edit">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(campaign.id)} className="text-slate-400 hover:text-red-400 bg-white/5 p-2 rounded-lg transition-colors" title="Delete">
+                    <button onClick={() => handleDelete(campaign.id)} className="text-slate-400 hover:text-red-500 bg-slate-100 p-2 rounded-lg transition-colors" title="Delete">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-2">{campaign.name}</h3>
-                <p className="text-cyan-400 text-sm font-medium mb-3">{campaign.goal}</p>
-                <p className="text-slate-400 text-sm flex-1 mb-6">{campaign.description}</p>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">{campaign.name}</h3>
+                <p className="text-indigo-600 text-sm font-medium mb-3">{campaign.goal}</p>
+                <p className="text-slate-500 text-sm flex-1 mb-6">{campaign.description}</p>
                 
-                <div className="pt-4 border-t border-white/10 text-xs text-slate-500">
+                <div className="pt-4 border-t border-slate-100 text-xs text-slate-400">
                   Created {new Date(campaign.created_at).toLocaleDateString()}
                 </div>
               </motion.div>
@@ -256,7 +253,6 @@ const Campaigns = () => {
           </div>
         )}
 
-        {/* Modal for Create/Edit */}
         <AnimatePresence>
           {isModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -264,21 +260,21 @@ const Campaigns = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/30"
                 onClick={handleCloseModal}
               />
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="glass-panel w-full max-w-lg rounded-3xl overflow-hidden relative z-10"
+                className="bg-white w-full max-w-lg rounded-xl overflow-hidden relative z-10 border border-slate-200 shadow-xl"
               >
-                <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Target className="w-5 h-5 text-cyan-400" />
+                <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                  <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <Target className="w-5 h-5 text-indigo-600" />
                     {editingId ? 'Edit Campaign' : 'New Campaign'}
                   </h2>
-                  <button type="button" onClick={handleCloseModal} className="text-slate-400 hover:text-white p-1">
+                  <button type="button" onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 p-1">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -290,9 +286,9 @@ const Campaigns = () => {
                       name="business_profile_id" 
                       value={formData.business_profile_id} 
                       onChange={handleChange} 
-                      className={`${inputClass} appearance-none bg-[#0f172a]`}
+                      className={`${inputClass} appearance-none`}
                       required
-                      disabled={profiles.length === 1} // Disallow changing if only one exists
+                      disabled={profiles.length === 1}
                     >
                       {profiles.map(p => (
                         <option key={p.id} value={p.id}>{p.business_name}</option>
@@ -343,7 +339,7 @@ const Campaigns = () => {
                       name="status" 
                       value={formData.status} 
                       onChange={handleChange} 
-                      className={`${inputClass} appearance-none bg-[#0f172a]`}
+                      className={`${inputClass} appearance-none`}
                     >
                       <option value="draft">Draft</option>
                       <option value="active">Active</option>

@@ -29,54 +29,47 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white flex items-center justify-center p-6 overflow-hidden relative font-sans">
-      {/* Animated Background Orbs */}
-      <div className="absolute top-[10%] left-[10%] w-[50%] h-[50%] rounded-full bg-purple-900/20 blur-[150px] pointer-events-none animate-orb" />
-      <div className="absolute bottom-[10%] right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-900/20 blur-[150px] pointer-events-none animate-orb-slow" />
-
-      <Link to="/" className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 transition-colors z-20">
+    <div className="min-h-screen bg-slate-100 text-slate-800 flex items-center justify-center p-6 relative font-sans">
+      <Link to="/" className="absolute top-8 left-8 text-slate-400 hover:text-slate-700 flex items-center gap-2 transition-colors z-20">
         <ArrowLeft className="w-4 h-4" />
         <span className="text-sm font-medium">Back to Home</span>
       </Link>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-10">
-          <motion.div 
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 mb-6 shadow-[0_0_40px_rgba(170,59,255,0.4)] cursor-pointer"
-          >
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-indigo-600 mb-6 shadow-md">
             <Sparkles className="w-8 h-8 text-white" />
-          </motion.div>
-          <h1 className="text-4xl font-bold mb-3 tracking-tight">Welcome back</h1>
-          <p className="text-slate-400 text-lg">Log in to Atom Marketing Platform</p>
+          </div>
+          <h1 className="text-4xl font-bold mb-3 tracking-tight text-slate-800">Welcome back</h1>
+          <p className="text-slate-500 text-lg">Sign in to AltaAI Assistant</p>
         </div>
 
-        <div className="glass-panel rounded-3xl p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
-          
+        <div className="bg-white rounded-xl p-8 relative overflow-hidden border border-slate-200 shadow-sm">
+          <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300 ml-1">Email Address</label>
+              <label className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                  <Mail className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                 </div>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-12 pr-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   placeholder="name@company.com"
                   required
                 />
@@ -85,18 +78,18 @@ const Login = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
-                <label className="text-sm font-medium text-slate-300">Password</label>
-                <a href="#" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">Forgot password?</a>
+                <label className="text-sm font-medium text-slate-600">Password</label>
+                <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors">Forgot password?</a>
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                  <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                 </div>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-12 pr-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   placeholder="••••••••"
                   required
                 />
@@ -104,13 +97,13 @@ const Login = () => {
             </div>
 
             <Button variant="primary" className="w-full py-4 text-lg mt-2" disabled={loading}>
-              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Sign In to Atom'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Sign In'}
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-slate-400">
+          <div className="mt-8 text-center text-slate-500">
             Don't have an account?{' '}
-            <Link to="/register" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+            <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
               Create one now
             </Link>
           </div>

@@ -82,7 +82,7 @@ const BusinessProfile = () => {
       <DashboardLayout>
         <div className="flex items-center justify-center h-full min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             <p className="text-slate-400 animate-pulse">Loading company context...</p>
           </div>
         </div>
@@ -90,18 +90,18 @@ const BusinessProfile = () => {
     );
   }
 
-  const inputClass = "w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all";
-  const labelClass = "block text-sm font-medium text-slate-300 mb-2 ml-1";
+  const inputClass = "w-full bg-slate-50 border border-slate-200 rounded-lg py-3 px-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all";
+  const labelClass = "block text-sm font-medium text-slate-600 mb-2 ml-1";
 
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <Briefcase className="w-8 h-8 text-cyan-400" />
+          <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+            <Briefcase className="w-8 h-8 text-indigo-600" />
             Company Context
           </h1>
-          <p className="text-slate-400">
+          <p className="text-slate-500">
             Configure AltaAI's internal company context. This information powers the AI assistant across sales, marketing, LinkedIn, and knowledge workflows.
           </p>
         </div>
@@ -109,18 +109,18 @@ const BusinessProfile = () => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-panel rounded-3xl p-8 md:p-10 relative overflow-hidden"
+          className="bg-white rounded-xl p-8 md:p-10 relative overflow-hidden border border-slate-200 shadow-sm"
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500"></div>
 
           {statusMsg.text && (
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className={`mb-8 p-4 rounded-xl flex items-start gap-3 ${
+              className={`mb-8 p-4 rounded-lg flex items-start gap-3 ${
                 statusMsg.type === 'success' 
-                  ? 'bg-green-500/10 border border-green-500/20 text-green-400' 
-                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                  ? 'bg-green-50 border border-green-200 text-green-600' 
+                  : 'bg-red-50 border border-red-200 text-red-600'
               }`}
             >
               {statusMsg.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" /> : <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />}
@@ -187,7 +187,7 @@ const BusinessProfile = () => {
                   name="brand_tone" 
                   value={formData.brand_tone} 
                   onChange={handleChange} 
-                  className={`${inputClass} appearance-none bg-black/40`}
+                  className={`${inputClass} appearance-none`}
                   required
                 >
                   <option value="" disabled>Select a tone</option>
@@ -226,7 +226,7 @@ const BusinessProfile = () => {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-white/5 flex justify-end">
+            <div className="pt-6 border-t border-slate-200 flex justify-end">
               <Button type="submit" variant="primary" className="min-w-[200px]" disabled={saving}>
                 {saving ? (
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
